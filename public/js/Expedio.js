@@ -25,7 +25,11 @@ var expedio = expedio || {};
             // if a search was placed, show result view
             search.on( "search", function( where, from, to ) {
             	search.close();
-            	this.router.navigate( "search/in/" + encodeURIComponent( where ) + "/from/" + from + "/to/" + to + "/" );
+            	from = moment( from, "MM/DD/YYYY" ).format( "DD-MM-YYYY" );
+            	to = moment( to, "MM/DD/YYYY" ).format( "DD-MM-YYYY" );
+            	that.router.navigate( "search/in/" + encodeURIComponent( where ) + "/from/" + from + "/to/" + to + "/", {
+            		trigger: true	
+            	});
             });
 		},
 

@@ -24,6 +24,10 @@ body {
 	font-family: Helvetica;
 }
 
+div#map {
+	border: 1px solid black;
+}
+
 div.expedio-hotels {
 	height: 100%;
 	margin: 1rem;
@@ -48,4 +52,8 @@ div.expedio-hotels > div.expedio-hotels_list {
 div.expedio-hotel {
 	padding: 1rem;
 	border: 1px solid black;
+}
+
+div.expedio-hotel:nth-child( even ) {
+	background-color: lightgray;
 }

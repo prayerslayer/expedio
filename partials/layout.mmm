@@ -53,16 +53,13 @@
         </script>
 
         <script type="text/template" id="hotelTemplate">
-
-            <h1><%= name %></h1>
-            <img src="http://images.travelnow.com/<%= thumbNailUrl %>" />
-            <div class="expedio-hotel_metadata">
-                <% if ( this.tripAdvisorRatingUrl && this.tripAdvisorRating ) { %>
-                    <img src="<%= tripAdvisorRatingUrl %>" title="<%= tripAdvisorRating %>" alt="<%= tripAdvisorRating %>"/>
-                <% } %>
+            <h3><%= name %></h3>
+            <img class="expedio-hotel_thumbnail" src="http://images.travelnow.com/<%= thumbNailUrl %>" />
+            <div class="expedio-hotel_location">
+                <div><%= address1 %>, <%= locationDescription %></div> 
             </div>
-            <div class="expedio-hotel_description">
-                <%= _.unescape( shortDescription ) %>
+            <div class="expedio-hotel_rates">
+                from <%= lowRate/2 %> <%= rateCurrencyCode %> per night and person
             </div>
         </script>
 

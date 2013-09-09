@@ -13,6 +13,7 @@ var expedio = expedio || {};
             console.debug( data );
             var list = data.HotelListResponse.HotelList.HotelSummary;
             _.each( list, function( hotel ) {
+                hotel.id = hotel.hotelId;
                 hotel.score = hotel.lowRate / ( hotel.tripAdvisorRating || hotel.hotelRating );
             });
             console.debug( list );

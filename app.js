@@ -23,7 +23,11 @@ app.get( "/search/?", function( req, res ) {
 				"&minorRev=20" +
 				"&arrivalDate=" + req.query[ "from" ] + 
 				"&departureDate=" + req.query[ "to" ] + 
-				"&room1=2" +
+				"&room1=2" +			// 1 double bed room
+				//"&minStarRating=3.0" +	// only better than 
+				"&propertyCategory=1" + // list only hotels
+				"&sort=QUALITY" + 		// sort by rating
+				"&numberOfResults=50" + 
 				"&apiKey=" + process.env.EAN_KEY, 
 				function( exp_res ) {
 					var body = "";
