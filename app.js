@@ -17,7 +17,6 @@ app.configure( function() {
 });
 
 app.get( "/search/?", function( req, res ) {
-	console.log( req.query.where);
 	http.get( "http://api.ean.com/ean-services/rs/hotel/v3/list?" +
 				"destinationString=" + encodeURIComponent( req.query[ "where"] ) +
 				"&cid=55505" +
@@ -25,7 +24,7 @@ app.get( "/search/?", function( req, res ) {
 				"&arrivalDate=" + req.query[ "from" ] + 
 				"&departureDate=" + req.query[ "to" ] + 
 				"&room1=2" +
-				"&apiKey=qrcxsb4hq8wwpsxdrkc8dskd", 
+				"&apiKey=" + process.env.EAN_KEY, 
 				function( exp_res ) {
 					var body = "";
 					exp_res.on("data", function(chunk) {
