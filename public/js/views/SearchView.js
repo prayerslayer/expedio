@@ -20,14 +20,8 @@ var expedio = expedio || {};
 			var from = this.$el.find( "input[name=date-from_submit]" ).val(),
 				to = this.$el.find( "input[name=date-to_submit]" ).val(),
 				where = this.ui.place.val();
-			console.log( from, to, where );
-			$.ajax({ 
-				"url": "http://localhost:3000/search?where=" + where + "&from=" + from + "&to=" + to,
-				"dataType": "json",
-				"accept": "application/json"
-			}).always( function( a, b, c ) {
-				console.debug( a, b, c );
-			});
+
+			this.trigger( "search", where, from, to );
 		},
 
 		onShow: function() {

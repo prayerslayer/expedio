@@ -11,8 +11,13 @@
         <script src="js/libs/numeral.min.js"></script>
         <script src="js/libs/pickadate.js"></script>
         <script src="js/libs/moment.js"></script>
+        <!-- models -->
+        <script type="text/javascript" src="js/models/HotelModel.js"></script>
+        <script type="text/javascript" src="js/models/HotelCollection.js"></script>
         <!-- views -->
         <script type="text/javascript" src="js/views/SearchView.js"></script>
+        <script type="text/javascript" src="js/views/HotelView.js"></script>
+        <script type="text/javascript" src="js/views/HotelListView.js"></script>
         <script type="text/javascript" src="js/Expedio.js"></script>
         <!-- templates -->
         <script type="text/template" id="searchTemplate">
@@ -27,17 +32,19 @@
             <div class="button button-search">submit</div>
         </script>
 
+        <script type="text/template" id="hotelTemplate">
+            <h1><%= name %></h1>
+            <%= score %>
+            <div class="expedio-hotel_description">
+                <%= _.unescape( shortDescription ) %>
+            </div>
+        </script>
+
         <!-- start -->
         <script type="text/javascript">
             $( document ).ready( function() {
                 $.support.cors = true;
                 var app = new expedio.App();
-                app.addInitializer(function() {
-                    this.addRegions({
-                        "main": "div#main"
-                    });
-                    this.getRegion( "main" ).show( new expedio.SearchView());
-                });
                 app.start();
             });
         </script>
