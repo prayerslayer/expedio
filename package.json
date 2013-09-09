@@ -3,16 +3,16 @@
   "version": "0.0.1",
   "author": "Nikolaus Piccolotto <hello@npiccolotto.com>",
   "description": "A better Expedia",
-  // "repository": {
-  //   "type": "git",
-  //  	"url": "https://github.com/nodejitsu/http-server.git"
-  // },
-  "dependencies" : {
-  	"express": "3.3.x",
-  	"mmm": "0.2.x"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/prayerslayer/expedio.git"
+  },
+  "dependencies": {
+    "express": "3.3.x",
+    "mmm": "0.2.x"
   },
   "devDependencies": {
-  	"nodemon": "0.7.x"
+    "nodemon": "0.7.x"
   },
   "engines": {
     "node": ">=0.8"

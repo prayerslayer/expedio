@@ -1,7 +1,4 @@
 div#main {
-	position: relative;
-	width: 80%;
-	margin: 0 auto;
 }
 
 div.expedio-search > input {
@@ -20,4 +17,35 @@ div.expedio-search > input {
 
 .button-search {
 	font-size: 150%;
+}
+
+body {
+	height: 90%;
+	font-family: Helvetica;
+}
+
+div.expedio-hotels {
+	height: 100%;
+	margin: 1rem;
+	display: -webkit-flex;
+	-webkit-justify-content: center;
+	-webkit-align-items: center;
+}
+
+div.expedio-hotels > div#map {
+	display: -webkit-flex;
+	-webkit-flex: 2;
+	height: 100%;
+	width: 100%;
+}
+
+div.expedio-hotels > div.expedio-hotels_list {
+	-webkit-flex: 1;
+	overflow: scroll;
+	height: 100%;
+}
+
+div.expedio-hotel {
+	padding: 1rem;
+	border: 1px solid black;
 }

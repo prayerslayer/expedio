@@ -4,6 +4,18 @@
         <title>Expedio</title>
         <link rel="stylesheet" href="css/style.css">
         <link rel="stylesheet" href="css/pickadate.02.classic.css">
+
+         <link href='//api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.css' rel='stylesheet' />
+          <!--[if lte IE 8]>
+            <link href='//api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.ie.css' rel='stylesheet' />
+          <![endif]-->
+          <script src='//api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.js'></script>
+          <style>
+          #map {
+            width:600px;
+            height:400px;
+          }
+        </style>
         <script src="js/libs/jquery.js"></script>
         <script src="js/libs/underscore.js"></script>
         <script src="js/libs/backbone.js"></script>
@@ -17,8 +29,10 @@
         <!-- views -->
         <script type="text/javascript" src="js/views/SearchView.js"></script>
         <script type="text/javascript" src="js/views/HotelView.js"></script>
-        <script type="text/javascript" src="js/views/HotelListView.js"></script>
+        <script type="text/javascript" src="js/views/ResultView.js"></script>
         <script type="text/javascript" src="js/Expedio.js"></script>
+        <!-- controllers -->
+        <script type="text/javascript" src="js/controllers/Router.js"></script>
         <!-- templates -->
         <script type="text/template" id="searchTemplate">
             <span>Where to look?</span>
@@ -32,9 +46,21 @@
             <div class="button button-search">submit</div>
         </script>
 
+        <script type="text/template" id="resultTemplate">
+            <div id="map">
+            </div>
+            <div class="expedio-hotels_list"></div>
+        </script>
+
         <script type="text/template" id="hotelTemplate">
+
             <h1><%= name %></h1>
-            <%= score %>
+            <img src="http://images.travelnow.com/<%= thumbNailUrl %>" />
+            <div class="expedio-hotel_metadata">
+                <% if ( this.tripAdvisorRatingUrl && this.tripAdvisorRating ) { %>
+                    <img src="<%= tripAdvisorRatingUrl %>" title="<%= tripAdvisorRating %>" alt="<%= tripAdvisorRating %>"/>
+                <% } %>
+            </div>
             <div class="expedio-hotel_description">
                 <%= _.unescape( shortDescription ) %>
             </div>
