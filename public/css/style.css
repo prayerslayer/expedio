@@ -1,0 +1,23 @@
+div#main {
+	position: relative;
+	width: 80%;
+	margin: 0 auto;
+}
+
+div.expedio-search > input {
+	width: 90%;
+	margin: 0 auto;
+}
+
+.button {
+	-webkit-transition: color .2s;
+}
+
+.button:hover{
+	cursor: pointer;
+	color: green;
+}
+
+.button-search {
+	font-size: 150%;
+}

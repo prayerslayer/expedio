@@ -1,0 +1,50 @@
+<DOCTYPE HTML>
+<html>
+    <head>
+        <title>Expedio</title>
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/pickadate.02.classic.css">
+        <script src="js/libs/jquery.js"></script>
+        <script src="js/libs/underscore.js"></script>
+        <script src="js/libs/backbone.js"></script>
+        <script src="js/libs/backbone.marionette.js"></script>
+        <script src="js/libs/numeral.min.js"></script>
+        <script src="js/libs/pickadate.js"></script>
+        <script src="js/libs/moment.js"></script>
+        <!-- views -->
+        <script type="text/javascript" src="js/views/SearchView.js"></script>
+        <script type="text/javascript" src="js/Expedio.js"></script>
+        <!-- templates -->
+        <script type="text/template" id="searchTemplate">
+            <span>Where to look?</span>
+            <input class="place" type="text"/>
+            <br/>
+            <span>From?</span>
+            <input class="date-from" name="date-from" type="text"/>
+            <br/>
+            <span>To?</span>
+            <input class="date-to" name="date-to" type="text"/>
+            <div class="button button-search">submit</div>
+        </script>
+
+        <!-- start -->
+        <script type="text/javascript">
+            $( document ).ready( function() {
+                $.support.cors = true;
+                var app = new expedio.App();
+                app.addInitializer(function() {
+                    this.addRegions({
+                        "main": "div#main"
+                    });
+                    this.getRegion( "main" ).show( new expedio.SearchView());
+                });
+                app.start();
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Expedio</h1>
+        <div id="main"></div>
+    </body>
+
+</html>
