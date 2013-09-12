@@ -16,9 +16,25 @@ app.configure( function() {
 	app.use( express.static(  path.join( __dirname, 'public' ) ) );
 });
 
+app.get( "/disambiguate/:place/?", function( req, res ) {
+	http.get( "http://api.ean.com/ean-services/rs/hotel/v3/geoSearch?" + 
+				"type=1" + // only cities
+				"&destinationString=" + req.params.place +
+				"&apiKey=" + process.env.EAN_KEY,
+				function( exp_res ) {
+					var body = "";
+					exp_res.on("data", function(chunk) {
+						body += chunk;
+					});
+					exp_res.on( "end", function( chunk ) {
+						res.send( 200, body );
+					});
+				});
+});
+
 app.get( "/search/?", function( req, res ) {
 	http.get( "http://api.ean.com/ean-services/rs/hotel/v3/list?" +
-				"destinationString=" + encodeURIComponent( req.query[ "where"] ) +
+				"destinationId=" + encodeURIComponent( req.query[ "where"] ) +
 				"&cid=55505" +
 				"&minorRev=20" +
 				"&arrivalDate=" + req.query[ "from" ] + 
@@ -26,8 +42,8 @@ app.get( "/search/?", function( req, res ) {
 				"&room1=2" +			// 1 double bed room
 				//"&minStarRating=3.0" +	// only better than 
 				"&propertyCategory=1" + // list only hotels
-				"&sort=QUALITY" + 		// sort by rating
-				"&numberOfResults=50" + 
+				//"&sort=QUALITY" + 		// sort by rating
+				"&numberOfResults=200" + 
 				"&apiKey=" + process.env.EAN_KEY, 
 				function( exp_res ) {
 					var body = "";
@@ -37,7 +53,7 @@ app.get( "/search/?", function( req, res ) {
 					exp_res.on( "end", function( chunk ) {
 						res.send( 200, body );
 					});
-	});
+				});
 });
 
 app.get( "/", function( req, res ) {
