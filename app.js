@@ -43,7 +43,7 @@ app.get( "/search/?", function( req, res ) {
 				//"&minStarRating=3.0" +	// only better than 
 				"&propertyCategory=1" + // list only hotels
 				//"&sort=QUALITY" + 		// sort by rating
-				"&numberOfResults=200" + 
+				"&numberOfResults=50" + 
 				"&apiKey=" + process.env.EAN_KEY, 
 				function( exp_res ) {
 					var body = "";

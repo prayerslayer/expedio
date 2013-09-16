@@ -1,4 +1,4 @@
-<DOCTYPE HTML>
+<!DOCTYPE HTML>
 <html>
     <head>
         <title>Expedio</title>
@@ -25,9 +25,10 @@
         <script type="text/javascript" src="js/views/SearchView.js"></script>
         <script type="text/javascript" src="js/views/HotelView.js"></script>
         <script type="text/javascript" src="js/views/ResultView.js"></script>
-        <script type="text/javascript" src="js/Expedio.js"></script>
+        <script type="text/javascript" src="js/views/Spinner.js"></script>
         <!-- controllers -->
         <script type="text/javascript" src="js/controllers/Router.js"></script>
+        <script type="text/javascript" src="js/Expedio.js"></script>
         <!-- templates -->
         <script type="text/template" id="searchTemplate">
             <span>Where to look?</span>
@@ -44,17 +45,28 @@
         <script type="text/template" id="resultTemplate">
             <div id="map">
             </div>
+            <div id="pullHandle">+</div>
             <div class="expedio-hotels_list"></div>
         </script>
 
         <script type="text/template" id="hotelTemplate">
             <h2><%= name %></h2>
             <img class="expedio-hotel_thumbnail" src="http://images.travelnow.com/<%= thumbNailUrl %>" />
+            <% if ( tripAdvisorRating ) { %>
+                <div class="expedio-hotel_tripadvisor">
+                    <img class="expedio-hotel_rating" src="<%= tripAdvisorRatingUrl %>" />
+                    <%= tripAdvisorReviewCount %> reviews
+                </div>
+            <% } %>
             <div class="expedio-hotel_location">
-                <div><%= address1 %>, <%= locationDescription %></div> 
+                <%= locationDescription %>
             </div>
             <div class="expedio-hotel_rates">
-                <%= lowRate %> - <%= highRate %> <%= rateCurrencyCode %> per night
+                <% if ( lowRate != highRate ) { %>
+                    <%= lowRate %> - <%= highRate %> $/night
+                <% } else { %>
+                    <%= lowRate %> $/night
+                <% } %>
             </div>
         </script>
 

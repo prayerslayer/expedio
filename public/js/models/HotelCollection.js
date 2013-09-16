@@ -15,6 +15,8 @@ var expedio = expedio || {};
             _.each( list, function( hotel ) {
                 hotel.id = hotel.hotelId;
                 hotel.score = hotel.lowRate / ( hotel.tripAdvisorRating || hotel.hotelRating );
+                if ( !hotel.tripAdvisorRating )
+                    hotel.tripAdvisorRating = 0;
             });
             console.debug( list );
             return list;

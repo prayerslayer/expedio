@@ -3,6 +3,8 @@ var expedio = expedio || {};
 ( function( $ ) {
 	expedio.App = Backbone.Marionette.Application.extend({
 
+        spinner: null,
+
 		start: function( opts ) {
 			var that = this;
 			this.addRegions({
@@ -34,6 +36,9 @@ var expedio = expedio || {};
 		},
 
 		_handleSearch: function( place, from, to ) {
+            this.spinner = new expedio.Spinner({
+                caller: "body"
+            });
 			from = moment( from, "DD-MM-YYYY" ).format( "MM/DD/YYYY");
 			to = moment( to, "DD-MM-YYYY" ).format( "MM/DD/YYYY");
 			this._search( place, from, to );
@@ -49,6 +54,7 @@ var expedio = expedio || {};
     				collection: coll
     			});
     			that.getRegion( "main" ).show( results );
+                that.spinner.close();
         	});
 		}
 		

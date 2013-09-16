@@ -11,6 +11,7 @@ Trying to build an opinionated, but fast and pretty frontend for Expedia.
 
 # Todo
 
+* Wie für CompositeView Liste rausfinden, welche Elemente sichtbar sind und welche nicht? Am besten wäre ja mit scrollTop indexieren, geht aber schlecht weil wo? Marionette gibt da keine Schnittstelle. manuell rausholen geht irgendwie auch umständlich, sollte abe ram ehesten funktionieren.
 * ordentliche startseite
 * Schönes Hotel Template --> bilder!
 * Sortieralgorithmus (schauen was bevorteilt wird mit dollar/rating)
