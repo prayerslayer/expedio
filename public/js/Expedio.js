@@ -36,9 +36,7 @@ var expedio = expedio || {};
 		},
 
 		_handleSearch: function( place, from, to ) {
-            this.spinner = new expedio.Spinner({
-                caller: "body"
-            });
+            this.spinner = new expedio.Spinner();
 			from = moment( from, "DD-MM-YYYY" ).format( "MM/DD/YYYY");
 			to = moment( to, "DD-MM-YYYY" ).format( "MM/DD/YYYY");
 			this._search( place, from, to );
@@ -55,6 +53,7 @@ var expedio = expedio || {};
     			});
     			that.getRegion( "main" ).show( results );
                 that.spinner.close();
+                //TODO fetch more results here
         	});
 		}
 		

@@ -4,13 +4,14 @@ var expedio = expedio || {};
 	expedio.HotelCollection = Backbone.Collection.extend({
 
         model: expedio.Hotel,
+        more_available: false,
 
         comparator: function( m ) {
             return m.get( "score" );
         },
 
         parse: function( data ) {
-            console.debug( data );
+            this.more_available = data.HotelListResponse.moreResultsAvailable;
             var list = data.HotelListResponse.HotelList.HotelSummary;
             _.each( list, function( hotel ) {
                 hotel.id = hotel.hotelId;

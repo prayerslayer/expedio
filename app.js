@@ -12,6 +12,7 @@ app.configure( function() {
 	app.use( express.logger( 'dev' ) );
 	app.use( express.bodyParser() );
 	app.use( express.methodOverride() );
+	app.use( express.cookieParser( process.env.COOKIE_SECRET ) );
 	app.use( app.router );
 	app.use( express.static(  path.join( __dirname, 'public' ) ) );
 });
@@ -27,6 +28,7 @@ app.get( "/disambiguate/:place/?", function( req, res ) {
 						body += chunk;
 					});
 					exp_res.on( "end", function( chunk ) {
+						//TODO hier background job starten, der bilder von http://api.ean.com/ean‑services/rs/hotel/v3/roomImages sammelt
 						res.send( 200, body );
 					});
 				});
@@ -42,8 +44,8 @@ app.get( "/search/?", function( req, res ) {
 				"&room1=2" +			// 1 double bed room
 				//"&minStarRating=3.0" +	// only better than 
 				"&propertyCategory=1" + // list only hotels
-				//"&sort=QUALITY" + 		// sort by rating
-				"&numberOfResults=50" + 
+				"&sort=QUALITY" + 		// sort by rating
+				"&numberOfResults=20" + 
 				"&apiKey=" + process.env.EAN_KEY, 
 				function( exp_res ) {
 					var body = "";

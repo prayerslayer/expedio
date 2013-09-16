@@ -31,14 +31,15 @@
         <script type="text/javascript" src="js/Expedio.js"></script>
         <!-- templates -->
         <script type="text/template" id="searchTemplate">
-            <span>Where to look?</span>
-            <input class="place" type="search" autocomplete="on"/>
-            <br/>
-            <span>From?</span>
+            <label for="place">Where to search?</label>
+            <input class="place" name="place" type="search" autocomplete="on"/>
+            
+            <label for="date-from">Select start date</label>
             <input class="date-from" name="date-from" type="text"/>
-            <br/>
-            <span>To?</span>
+            
+            <label for="date-to">Select end date</label>
             <input class="date-to" name="date-to" type="text"/>
+            
             <div class="button button-search">submit</div>
         </script>
 
