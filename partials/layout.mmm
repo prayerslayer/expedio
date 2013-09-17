@@ -32,14 +32,14 @@
         <!-- templates -->
         <script type="text/template" id="searchTemplate">
             <label for="place">Where to search?</label>
-            <input class="place" name="place" type="search" autocomplete="on"/>
+            <input class="place" name="place" type="text"/>
             
             <label for="date-from">Select start date</label>
             <input class="date-from" name="date-from" type="text"/>
             
             <label for="date-to">Select end date</label>
             <input class="date-to" name="date-to" type="text"/>
-            
+
             <div class="button button-search">submit</div>
         </script>
 

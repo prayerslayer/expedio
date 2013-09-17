@@ -3,22 +3,36 @@ div#main {
 	width: 100%;
 }
 
+div.expedio-search {
+	display: -webkit-flex;
+	-webkit-flex-direction: column;
+	-webkit-justify-content: center;
+	-webkit-align-items: center;
+}
+
 div.expedio-search > input {
-	width: 90%;
-	margin: 0 auto;
-}
-
-.button {
-	-webkit-transition: color .2s;
-}
-
-.button:hover{
-	cursor: pointer;
-	color: green;
-}
-
-.button-search {
 	font-size: 150%;
+	width: 50%;
+}
+
+div.expedio-search > label {
+	margin: 2rem;
+	font-size: 150%;
+}
+
+div.expedio-search > .button {
+	-webkit-transition: background-color .2s;
+	background-color: steelblue;
+	color: white;
+	font-size: 200%;
+	margin: 2rem;
+	padding: 1rem;
+	border-radius: 1rem;
+}
+
+div.expedio-search > .button:hover{
+	cursor: pointer;
+	background-color: orange;
 }
 
 html {
@@ -67,9 +81,7 @@ div.expedio-hotels > div#map {
 	-webkit-flex: 1;
 	-webkit-transition: -webkit-flex .2s;
 	height: 100%;
-	width: 104%;
-	left: -2%;
-	position: relative;
+	width: 100%;
 }
 
 div.expedio-hotels > div.expedio-hotels_list {
