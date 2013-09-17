@@ -1,7 +1,11 @@
 var express = require( 'express' ),
 	http = require( "http" ),
 	path = require( "path" ),
-	app = express();
+	app = express(),
+	kue = require( "kue" ),
+	jobs = kue.createQueue(),
+	_ = require( "underscore" ),
+	mongo = require( "mongoose" );
 
 // configure application
 app.configure( function() {
@@ -17,6 +21,55 @@ app.configure( function() {
 	app.use( express.static(  path.join( __dirname, 'public' ) ) );
 });
 
+// DB stuff
+
+mongo.connect( "mongodb://localhost/test" ); // TODO how to create new database?
+var imgSchema = null;
+var db = mongo.connection;
+db.once( "open", function( ) {
+	imgSchema = mongo.Schema({
+		"hotelId": String,
+		"url": String //TODO binary data for image missing
+	});
+});
+
+// Job Queue stuff
+
+jobs.on('job complete', function(id){
+	Job.get(id, function(err, job){
+		if (err) return;
+		job.remove( function(err) { 
+			if (err) throw err;
+			console.log('removed completed job #%d', job.id);
+		});
+	});
+});
+
+jobs.process( "fetch room images", function( job, done ) {
+	http.get( "http://api.ean.com/ean‑services/rs/hotel/v3/roomImages?" + 
+			"hotelId=" + job.hotelId + 
+			"&apiKey=" + process.env.EAN_KEY, function( res ) {
+		var body = "";
+		res.on( "data", function( chunk ) {
+			body += chunk;
+		});
+		res.on( "end", function( chunk ) {
+			body += chunk;
+			var data = JSON.parse( body );
+			// we're done if there are no images
+			if ( !data.HotelRoomImageResponse.RoomImages.@size )
+				done();
+			// else loop through images and save them to mongo
+			_.each( data.HotelRoomImageResponse.RoomImages.RoomImage, function( img ) {
+				// TODO!
+			});
+			done();
+		});
+	});
+});
+
+// API
+
 app.get( "/disambiguate/:place/?", function( req, res ) {
 	http.get( "http://api.ean.com/ean-services/rs/hotel/v3/geoSearch?" + 
 				"type=1" + // only cities
@@ -28,7 +81,6 @@ app.get( "/disambiguate/:place/?", function( req, res ) {
 						body += chunk;
 					});
 					exp_res.on( "end", function( chunk ) {
-						//TODO hier background job starten, der bilder von http://api.ean.com/ean‑services/rs/hotel/v3/roomImages sammelt
 						res.send( 200, body );
 					});
 				});
@@ -53,7 +105,18 @@ app.get( "/search/?", function( req, res ) {
 						body += chunk;
 					});
 					exp_res.on( "end", function( chunk ) {
+						body += chunk;
+						// send response to client
 						res.send( 200, body );
+
+						// start background jobs
+						var data = JSON.parse( body );
+						_.each( data.HotelListResponse.HotelList.HotelSummary, function( hotel ) {
+							var bgjob = jobs.create( "fetch room images", {
+								"hotelId": hotel.hotelId
+							}).save();
+						});
+						
 					});
 				});
 });
