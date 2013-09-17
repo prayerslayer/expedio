@@ -32,13 +32,13 @@
         <!-- templates -->
         <script type="text/template" id="searchTemplate">
             <label for="place">Where to search?</label>
-            <input class="place" name="place" type="text"/>
+            <input class="place" name="place" placeholder="Your destination, e.g. Paris" type="text"/>
             
             <label for="date-from">Select start date</label>
-            <input class="date-from" name="date-from" type="text"/>
+            <input class="date-from" name="date-from" placeholder="The first day of your stay" type="text"/>
             
             <label for="date-to">Select end date</label>
-            <input class="date-to" name="date-to" type="text"/>
+            <input class="date-to" name="date-to" placeholder="The last day of your stay" type="text"/>
 
             <div class="button button-search">submit</div>
         </script>
@@ -69,6 +69,7 @@
                     <%= lowRate %> $/night
                 <% } %>
             </div>
+            <a target="_blank" href="<%= deepLink %>">Book on ian.com</a>
         </script>
 
         <!-- start -->
