@@ -11,8 +11,8 @@ Trying to build an opinionated, but fast and pretty frontend for Expedia.
 
 # Todo
 
-* Mongo
-* Kue
+* Bilder cachen
+* Icons für Wifi, frühstück...
 * ordentliche startseite
 * Schönes Hotel Template --> bilder!
 * Sortieralgorithmus (schauen was bevorteilt wird mit dollar/rating)
