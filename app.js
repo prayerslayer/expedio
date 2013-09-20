@@ -9,6 +9,7 @@ var express = require( 'express' ),
 
 // configure application
 app.configure( function() {
+	app.set( "port", process.env.PORT );
 	app.set( 'views', path.join( __dirname, 'partials' ) );
 	app.set( 'view engine', 'mmm' );
 	app.set( 'layout', 'layout' );
@@ -23,46 +24,88 @@ app.configure( function() {
 
 // DB stuff
 
-mongo.connect( "mongodb://localhost/test" ); // TODO how to create new database?
-var imgSchema = null;
-var db = mongo.connection;
-db.once( "open", function( ) {
-	imgSchema = mongo.Schema({
-		"hotelId": String,
-		"url": String //TODO binary data for image missing
+mongo.connect( "mongodb://" + process.env.MONGO_SERVER + "/" + process.env.MONGO_DB );
+var ImgSchema = null,
+	Img = null,
+	db = mongo.connection;
+db.once( "open", function( err ) {
+	console.log( "Opened mongo, defining schema and model" );
+	ImgSchema = mongo.Schema({
+		"hotelId": Number,
+		"roomCode": Number,
+		"url": String
 	});
+	Img = mongo.model( "Img", ImgSchema );
 });
 
 // Job Queue stuff
 
-jobs.on('job complete', function(id){
-	Job.get(id, function(err, job){
-		if (err) return;
-		job.remove( function(err) { 
-			if (err) throw err;
+jobs.on('job complete', function( id ){
+	Job.get( id, function( err, job ){
+		if ( err )
+			console.log( err );
+		return;
+		job.remove( function( err ) {
+			console.log( "Error at removing: " + err ); 
+			if ( err )
+				throw err;
 			console.log('removed completed job #%d', job.id);
+			//TODO inform clients via socket
 		});
 	});
 });
 
 jobs.process( "fetch room images", function( job, done ) {
-	http.get( "http://api.ean.com/ean‑services/rs/hotel/v3/roomImages?" + 
-			"hotelId=" + job.hotelId + 
-			"&apiKey=" + process.env.EAN_KEY, function( res ) {
+	console.log( "Fetching room images for " + job.data.hotelId );
+	http.get({
+				"host": "api.ean.com",
+				"path": "/ean‑services/rs/hotel/v3/roomImages?hotelId=" + job.data.hotelId + "&apiKey=" + process.env.EAN_KEY,
+				"headers": {
+					"accept": "application/json, text/javascript, */*"
+				}
+			}, function( res, a, b ) {
+		
 		var body = "";
+		res.on( "error", function( err ) {
+			console.log( err );
+		});
 		res.on( "data", function( chunk ) {
 			body += chunk;
 		});
-		res.on( "end", function( chunk ) {
-			body += chunk;
+		res.on( "end", function( ) {
+			console.log( "Got response for " + job.data.hotelId + ": " + body.substring( 0,16 ) + "..." );
+			if ( body.indexOf("<") === 0) {
+				done( new Error( "Invalid JSON response.", body ) );
+				return;
+			}
 			var data = JSON.parse( body );
+
 			// we're done if there are no images
-			if ( !data.HotelRoomImageResponse.RoomImages.@size )
+			if ( !data.HotelRoomImageResponse.RoomImages["@size"] )
 				done();
 			// else loop through images and save them to mongo
 			_.each( data.HotelRoomImageResponse.RoomImages.RoomImage, function( img ) {
-				// TODO!
+				//check if this image is in database
+				Img.find({
+					"hotelId": job.data.hotelId,
+					"url": img.url,
+					"roomCode": img.roomTypeCode
+				}, function( err, imgs ) {
+					// break if there are room images
+					if ( imgs.length )
+						return;
+					//TODO check if image is different from that in db
+
+					// save new room image
+					var roomImg = new Img({
+						"hotelId": job.data.hotelId,
+						"url": img.url,
+						"roomCode": img.roomTypeCode
+					});
+					roomImg.save();
+				});
 			});
+			//TODO könnte schlecht sein das hier
 			done();
 		});
 	});
@@ -77,10 +120,13 @@ app.get( "/disambiguate/:place/?", function( req, res ) {
 				"&apiKey=" + process.env.EAN_KEY,
 				function( exp_res ) {
 					var body = "";
+					exp_res.on( "error", function( err ) {
+						console.log( err );
+					});
 					exp_res.on("data", function(chunk) {
 						body += chunk;
 					});
-					exp_res.on( "end", function( chunk ) {
+					exp_res.on( "end", function() {
 						res.send( 200, body );
 					});
 				});
@@ -101,18 +147,22 @@ app.get( "/search/?", function( req, res ) {
 				"&apiKey=" + process.env.EAN_KEY, 
 				function( exp_res ) {
 					var body = "";
+					exp_res.on( "error", function( err ) {
+						console.log( err );
+					});
 					exp_res.on("data", function(chunk) {
 						body += chunk;
 					});
-					exp_res.on( "end", function( chunk ) {
-						body += chunk;
+					exp_res.on( "end", function( ) {
+						//TODO check if hotel has images in db
+
 						// send response to client
 						res.send( 200, body );
-
+						
 						// start background jobs
 						var data = JSON.parse( body );
 						_.each( data.HotelListResponse.HotelList.HotelSummary, function( hotel ) {
-							var bgjob = jobs.create( "fetch room images", {
+							jobs.create( "fetch room images", {
 								"hotelId": hotel.hotelId
 							}).save();
 						});
@@ -125,4 +175,5 @@ app.get( "/", function( req, res ) {
 	res.render( "layout" );
 });
 
-app.listen( process.env.PORT );
+app.listen( app.get( "port" ) );
+console.log( "Server listening on " + app.get( "port" ) );
