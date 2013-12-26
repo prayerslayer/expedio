@@ -1,10 +1,12 @@
 var express = require( 'express' ),
 	http = require( "http" ),
 	path = require( "path" ),
+	Q = require( "q" ),
 	app = express(),
 	kue = require( "kue" ),
 	jobs = kue.createQueue(),
 	_ = require( "underscore" ),
+	qeach = Q.nbind( _.each, _ ),
 	mongo = require( "mongoose" );
 
 // configure application
@@ -25,43 +27,124 @@ app.configure( function() {
 // DB stuff
 
 mongo.connect( "mongodb://" + process.env.MONGO_SERVER + "/" + process.env.MONGO_DB );
-var ImgSchema = null,
-	Img = null,
-	db = mongo.connection;
+var HotelSchema = null,
+	Hotel = null,
+	HotelImgSchema = null,
+	HotelImg = null,
+	db = mongo.connection,
+	findHotels = null,
+	findHotelImgs = null;
+
 db.once( "open", function( err ) {
 	console.log( "Opened mongo, defining schema and model" );
-	ImgSchema = mongo.Schema({
+	// hotel information
+	HotelSchema = mongo.Schema({
 		"hotelId": Number,
-		"roomCode": Number,
-		"url": String
+		"name": String,
+		"checkInTime": String,
+		"checkOutTime": String,
+		"locationDescription": String,
+		"latitude": Number,
+		"longitude": Number,
+		"tripAdvisorRating": Number
 	});
-	Img = mongo.model( "Img", ImgSchema );
+	Hotel = mongo.model( "Hotel", HotelSchema );
+	findHotels = Q.nbind( Hotel.find, Hotel );
+	// hotel images
+	HotelImgSchema = mongo.Schema({
+		"hotelId": Number,
+		"caption": String,
+		"full_url": String,
+		"thumb_url": String
+	});
+	HotelImg = mongo.model( "HotelImg", HotelImgSchema );
+	findHotelImgs = Q.nbind( HotelImg.find, HotelImg );
+	// TODO room images
+
 });
 
 // Job Queue stuff
 
-jobs.on('job complete', function( id ){
-	Job.get( id, function( err, job ){
-		if ( err )
+jobs.on( "job complete", function( id ){
+	kue.Job.get( id, function( err, job ){
+		if ( err ) {
 			console.log( err );
-		return;
-		job.remove( function( err ) {
-			console.log( "Error at removing: " + err ); 
-			if ( err )
-				throw err;
-			console.log('removed completed job #%d', job.id);
+			return;
+		}
+		job.remove( function( erreur ) {
+			if ( erreur ) {
+				throw erreur;
+				console.log( "Error at removing: " + erreur ); 
+			} else {
+				console.log( "removed completed job #%d", job.id);
+			}
 			//TODO inform clients via socket
 		});
 	});
 });
 
+jobs.process( "fetch hotel info", function( job, done ) {
+	console.log( "Fetching hotel info for " + job.data.hotelId );
+	http.get({
+		"host": "api.ean.com",
+		"path": "/ean-services/rs/hotel/v3/info?cid=55505&hotelId=" + job.data.hotelId + "&apiKey=" + process.env.EAN_KEY,
+		"headers": {
+			"accept": "application/json"
+		}
+	}, function( res, a, b ) {
+		var body = "";
+		res.on( "error", function( err ) {
+			console.log( err );
+		});
+		res.on( "data", function( chunk ) {
+			body += chunk;
+		});
+		res.on( "end", function( ) {
+			console.log( "Got response for " + job.data.hotelId + ": " + body );
+			// check if it returned actually JSON
+			if ( body.indexOf( "<" ) === 0 )
+				done();
+			// parse data
+			var data = JSON.parse( body ).HotelInformationResponse;
+
+			// general hotel info
+			var hotel = new Hotel({
+				"hotelId": job.data.hotelId,
+				"name": data.HotelSummary.name,
+				"checkInTime": data.HotelDetails.checkInTime,
+				"checkOutTime": data.HotelDetails.checkOutTime,
+				"locationDescription": data.HotelSummary.locationDescription,
+				"latitude": data.HotelSummary.latitude,
+				"longitude": data.HotelSummary.longitude,
+				"tripAdvisorRating": data.HotelSummary.tripAdvisorRating
+			});
+			hotel.save();
+
+			// hotel images
+			if ( data.HotelImages["@size"] > 0 ) {
+				_.each( data.HotelImages.HotelImage, function( hotelimg, idx ) {
+					var hotelImg = new HotelImg({
+						"hotelId": job.data.hotelId,
+						"caption": hotelimg.caption,
+						"full_url": hotelimg.url,
+						"thumb_url": hotelimg.thumbnailUrl
+					});
+					hotelImg.save();
+				});
+			}
+
+			done();
+		});
+	});
+});
+/*
 jobs.process( "fetch room images", function( job, done ) {
 	console.log( "Fetching room images for " + job.data.hotelId );
 	http.get({
 				"host": "api.ean.com",
-				"path": "/ean‑services/rs/hotel/v3/roomImages?hotelId=" + job.data.hotelId + "&apiKey=" + process.env.EAN_KEY,
+				"path": "/ean-services/rs/hotel/v3/roomImages?cid=55505&hotelId=" + job.data.hotelId + "&apiKey=" + process.env.EAN_KEY,
 				"headers": {
-					"accept": "application/json, text/javascript, */*"
+					"accept": "application/json"
 				}
 			}, function( res, a, b ) {
 		
@@ -73,20 +156,25 @@ jobs.process( "fetch room images", function( job, done ) {
 			body += chunk;
 		});
 		res.on( "end", function( ) {
-			console.log( "Got response for " + job.data.hotelId + ": " + body.substring( 0,16 ) + "..." );
+			console.log( "Got response for " + job.data.hotelId + ": " + body );
 			if ( body.indexOf("<") === 0) {
 				done( new Error( "Invalid JSON response.", body ) );
 				return;
 			}
 			var data = JSON.parse( body );
-
-			// we're done if there are no images
-			if ( !data.HotelRoomImageResponse.RoomImages["@size"] )
+			console.log( JSON.stringify( data ) );
+			// look for error
+			if ( !data.HotelRoomImageResponse.EanWsError ) {
 				done();
+			}
+			// we're done if there are no images
+			if ( !data.HotelRoomImageResponse.RoomImages["@size"] ) {
+				done();
+			}
 			// else loop through images and save them to mongo
-			_.each( data.HotelRoomImageResponse.RoomImages.RoomImage, function( img ) {
+			_.each( data.HotelRoomImageResponse.RoomImages.RoomImage, function( img, idx ) {
 				//check if this image is in database
-				Img.find({
+				RoomImg.find({
 					"hotelId": job.data.hotelId,
 					"url": img.url,
 					"roomCode": img.roomTypeCode
@@ -95,9 +183,9 @@ jobs.process( "fetch room images", function( job, done ) {
 					if ( imgs.length )
 						return;
 					//TODO check if image is different from that in db
-
+					console.log( "Saving new image" );
 					// save new room image
-					var roomImg = new Img({
+					var roomImg = new RoomImg({
 						"hotelId": job.data.hotelId,
 						"url": img.url,
 						"roomCode": img.roomTypeCode
@@ -110,7 +198,7 @@ jobs.process( "fetch room images", function( job, done ) {
 		});
 	});
 });
-
+*/
 // API
 
 app.get( "/disambiguate/:place/?", function( req, res ) {
@@ -133,6 +221,7 @@ app.get( "/disambiguate/:place/?", function( req, res ) {
 });
 
 app.get( "/search/?", function( req, res ) {
+
 	http.get( "http://api.ean.com/ean-services/rs/hotel/v3/list?" +
 				"destinationId=" + encodeURIComponent( req.query[ "where"] ) +
 				"&cid=55505" +
@@ -150,22 +239,23 @@ app.get( "/search/?", function( req, res ) {
 					exp_res.on( "error", function( err ) {
 						console.log( err );
 					});
-					exp_res.on("data", function(chunk) {
+					exp_res.on( "data", function(chunk) {
 						body += chunk;
 					});
 					exp_res.on( "end", function( ) {
-						//TODO check if hotel has images in db
-
-						// send response to client
-						res.send( 200, body );
 						
-						// start background jobs
-						var data = JSON.parse( body );
-						_.each( data.HotelListResponse.HotelList.HotelSummary, function( hotel ) {
-							jobs.create( "fetch room images", {
-								"hotelId": hotel.hotelId
-							}).save();
-						});
+						var data = JSON.parse( body ),
+							response = [];
+
+						//TODO
+						// get mongo with Q to do the following:
+						// iterate over hotels in ean response
+						// try to find their images in mongo
+						// merge them with cached hotel info in mongo
+						// all of those objects put in an array
+						// return this array to client
+
+						res.send( 200, response );
 						
 					});
 				});
