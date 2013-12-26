@@ -12,7 +12,8 @@
     "mmm": "0.2.x",
     "mongoose": "~3.6.19",
     "kue": "~0.6.2",
-    "underscore": "~1.5.2"
+    "underscore": "~1.5.2",
+    "q": "~0.9.7"
   },
   "devDependencies": {
     "nodemon": "0.7.x"
