@@ -6,7 +6,6 @@ var express = require( 'express' ),
 	kue = require( "kue" ),
 	jobs = kue.createQueue(),
 	_ = require( "underscore" ),
-	qeach = Q.nbind( _.each, _ ),
 	mongo = require( "mongoose" );
 
 // configure application
@@ -31,9 +30,7 @@ var HotelSchema = null,
 	Hotel = null,
 	HotelImgSchema = null,
 	HotelImg = null,
-	db = mongo.connection,
-	findHotels = null,
-	findHotelImgs = null;
+	db = mongo.connection;
 
 db.once( "open", function( err ) {
 	console.log( "Opened mongo, defining schema and model" );
@@ -49,7 +46,7 @@ db.once( "open", function( err ) {
 		"tripAdvisorRating": Number
 	});
 	Hotel = mongo.model( "Hotel", HotelSchema );
-	findHotels = Q.nbind( Hotel.find, Hotel );
+
 	// hotel images
 	HotelImgSchema = mongo.Schema({
 		"hotelId": Number,
@@ -58,7 +55,6 @@ db.once( "open", function( err ) {
 		"thumb_url": String
 	});
 	HotelImg = mongo.model( "HotelImg", HotelImgSchema );
-	findHotelImgs = Q.nbind( HotelImg.find, HotelImg );
 	// TODO room images
 
 });
@@ -220,6 +216,26 @@ app.get( "/disambiguate/:place/?", function( req, res ) {
 				});
 });
 
+var fetchHotel = function( hotelId ) {
+	var mongo_param = { "hotelId": hotelId },
+		promise = Q.defer();
+
+	Q
+	.ninvoke( HotelImg, "find", mongo_param )
+	.then( function( db_imgs ) {
+		Q
+		.ninvoke( Hotel, "find", mongo_param )
+		.then( function( db_hotels ) {
+			var response = db_hotels[ 0 ].toObject();
+			response.images = db_imgs;
+			console.log( "response " + JSON.stringify( response ) );
+			promise.resolve( response );
+		});
+	});
+
+	return promise.promise;
+};
+
 app.get( "/search/?", function( req, res ) {
 
 	http.get( "http://api.ean.com/ean-services/rs/hotel/v3/list?" +
@@ -245,7 +261,16 @@ app.get( "/search/?", function( req, res ) {
 					exp_res.on( "end", function( ) {
 						
 						var data = JSON.parse( body ),
-							response = [];
+							response = [],
+							funcs = [];
+
+						_.each( data.HotelListResponse.HotelList.HotelSummary, function( hotel ) {
+							funcs.push( fetchHotel( hotel.hotelId ) );
+						});
+
+						Q.all( funcs ).then( function( hotels ) {
+							console.log( hotels );
+						});
 
 						//TODO
 						// get mongo with Q to do the following:
