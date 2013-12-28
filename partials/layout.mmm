@@ -46,19 +46,12 @@
         <script type="text/template" id="resultTemplate">
             <div id="map">
             </div>
-            <div id="pullHandle">+</div>
+            
             <div class="expedio-hotels_list"></div>
         </script>
 
         <script type="text/template" id="hotelTemplate">
             <h2><%= name %></h2>
-            <img class="expedio-hotel_thumbnail" src="http://images.travelnow.com/<%= thumbNailUrl %>" />
-            <% if ( tripAdvisorRating ) { %>
-                <div class="expedio-hotel_tripadvisor">
-                    <img class="expedio-hotel_rating" src="<%= tripAdvisorRatingUrl %>" />
-                    <%= tripAdvisorReviewCount %> reviews
-                </div>
-            <% } %>
             <div class="expedio-hotel_location">
                 <%= locationDescription %>
             </div>
@@ -69,21 +62,26 @@
                     <%= lowRate %> $/night
                 <% } %>
             </div>
-            <a target="_blank" href="<%= deepLink %>">Book on ian.com</a>
+            <% _.each( images, function( img ) { %>
+                <a href="<%= img.full_url %>" target="_blank"><img class="expedio-hotel_image" src="<%= img.thumb_url %>" /></a>
+            <% }) %>
         </script>
 
-        <!-- start -->
-        <script type="text/javascript">
-            $( document ).ready( function() {
-                $.support.cors = true;
-                var app = new expedio.App();
-                app.start();
-            });
-        </script>
     </head>
     <body>
         <h1>Expedio</h1>
         <div id="main"></div>
     </body>
+
+    <!-- start -->
+    <script type="text/javascript">
+
+        $( document ).ready( function() {
+
+            $.support.cors = true;
+            var app = new expedio.App();
+            app.start();
+        });
+    </script>
 
 </html>

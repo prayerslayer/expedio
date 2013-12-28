@@ -43,6 +43,8 @@ db.once( "open", function( err ) {
 		"locationDescription": String,
 		"latitude": Number,
 		"longitude": Number,
+		"lowRate": Number,
+		"highRate": Number,
 		"tripAdvisorRating": Number
 	});
 	Hotel = mongo.model( "Hotel", HotelSchema );
@@ -102,7 +104,6 @@ jobs.process( "fetch hotel info", function( job, done ) {
 				done();
 			// parse data
 			var data = JSON.parse( body ).HotelInformationResponse;
-
 			// general hotel info
 			var hotel = new Hotel({
 				"hotelId": job.data.hotelId,
@@ -112,6 +113,8 @@ jobs.process( "fetch hotel info", function( job, done ) {
 				"locationDescription": data.HotelSummary.locationDescription,
 				"latitude": data.HotelSummary.latitude,
 				"longitude": data.HotelSummary.longitude,
+				"lowRate": data.HotelSummary.lowRate,
+				"highRate": data.HotelSummary.highRate,
 				"tripAdvisorRating": data.HotelSummary.tripAdvisorRating
 			});
 			hotel.save();
@@ -216,6 +219,9 @@ app.get( "/disambiguate/:place/?", function( req, res ) {
 				});
 });
 
+/*
+*	Fetches information about a hotel and its images from mongodb.
+*/
 var fetchHotel = function( hotelId ) {
 	var mongo_param = { "hotelId": hotelId },
 		promise = Q.defer();
@@ -226,10 +232,21 @@ var fetchHotel = function( hotelId ) {
 		Q
 		.ninvoke( Hotel, "find", mongo_param )
 		.then( function( db_hotels ) {
-			var response = db_hotels[ 0 ].toObject();
-			response.images = db_imgs;
-			console.log( "response " + JSON.stringify( response ) );
-			promise.resolve( response );
+			// no such hotel
+			if ( !db_hotels.length ) {
+				// start background job to add this hotel instead
+				var job = jobs.create( "fetch hotel info", mongo_param ).save();
+				job.on( "complete", function() {
+					fetchHotel( hotelId ).then( function( hotel ) {
+						promise.resolve( hotel );
+					});
+				});
+			} else {
+				var response = db_hotels[ 0 ].toObject();
+				response.images = db_imgs;
+				console.log( "response " + JSON.stringify( response ) );
+				promise.resolve( response );
+			}
 		});
 	});
 
@@ -269,19 +286,9 @@ app.get( "/search/?", function( req, res ) {
 						});
 
 						Q.all( funcs ).then( function( hotels ) {
-							console.log( hotels );
+							response.push.apply( response, hotels );
+							res.send( 200, response );
 						});
-
-						//TODO
-						// get mongo with Q to do the following:
-						// iterate over hotels in ean response
-						// try to find their images in mongo
-						// merge them with cached hotel info in mongo
-						// all of those objects put in an array
-						// return this array to client
-
-						res.send( 200, response );
-						
 					});
 				});
 });

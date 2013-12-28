@@ -4,23 +4,19 @@ var expedio = expedio || {};
 	expedio.HotelCollection = Backbone.Collection.extend({
 
         model: expedio.Hotel,
-        more_available: false,
 
         comparator: function( m ) {
-            return m.get( "score" );
+            return m.get( "tripAdvisorRating" );
         },
 
         parse: function( data ) {
-            this.more_available = data.HotelListResponse.moreResultsAvailable;
-            var list = data.HotelListResponse.HotelList.HotelSummary;
-            _.each( list, function( hotel ) {
+            //this.more_available = data.HotelListResponse.moreResultsAvailable;
+            _.each( data, function( hotel ) {
                 hotel.id = hotel.hotelId;
-                hotel.score = hotel.lowRate / ( hotel.tripAdvisorRating || hotel.hotelRating );
                 if ( !hotel.tripAdvisorRating )
                     hotel.tripAdvisorRating = 0;
             });
-            console.debug( list );
-            return list;
+            return data;
         }
 
 	});

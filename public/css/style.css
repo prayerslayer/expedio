@@ -48,12 +48,8 @@ body {
 
 div.expedio-hotels {
 	height: 100%;
-	display: -webkit-flex;
-	-webkit-flex-direction: column;
-	-webkit-justify-content: center;
-	-webkit-align-items: center;
 }
-
+/*
 div#pullHandle {
 	width: 30px;
 	height:30px;
@@ -71,24 +67,28 @@ div#pullHandle {
 div#pullHandle:hover {
 	background-color: orange;
 }
-
+*/
 div.expedio-hotels > h2 {
 	font-weight: 300;
 }
 
 div.expedio-hotels > div#map {
-	display: -webkit-flex;
-	-webkit-flex: 1;
-	-webkit-transition: -webkit-flex .2s;
 	height: 100%;
-	width: 100%;
+	width: 60%;
+	position: absolute;
+	top: 0;
+	left: 0;
 }
 
 div.expedio-hotels > div.expedio-hotels_list {
-	-webkit-flex: 2;
 	overflow: scroll;
 	padding: 1rem;
-	width: 80%;
+	width: 40%;
+	height: 100%;
+	position: absolute;
+	right: 0;
+	top: 0;
+	background-color: white;
 }
 
 div.expedio-hotel {
