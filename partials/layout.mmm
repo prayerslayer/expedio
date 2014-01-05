@@ -57,9 +57,9 @@
             </div>
             <div class="expedio-hotel_rates">
                 <% if ( lowRate != highRate ) { %>
-                    <%= lowRate %> - <%= highRate %> $/night
+                    <%= hr_lowRate %> - <%= hr_highRate %> per night
                 <% } else { %>
-                    <%= lowRate %> $/night
+                    <%= hr_lowRate %> per night
                 <% } %>
             </div>
             <% _.each( images, function( img ) { %>
