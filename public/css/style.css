@@ -22,7 +22,7 @@ div.expedio-search > label {
 
 div.expedio-search > .button {
 	-webkit-transition: background-color .2s;
-	background-color: steelblue;
+	background-color: #79A6D2;
 	color: white;
 	font-size: 200%;
 	margin: 2rem;
@@ -55,7 +55,7 @@ div#pullHandle {
 	height:30px;
 	top: -15px;
 	position:relative;
-	background-color: steelblue;
+	background-color: #79A6D2;
 	border: 5px solid white;
 	border-radius: 50%;
 	cursor: pointer;
@@ -93,10 +93,17 @@ div.expedio-hotels > div.expedio-hotels_list {
 
 div.expedio-hotel {
 	padding: 1rem;
-}j
+	border-radius: .5rem;
+}
+
+img.expedio-hotel_image {
+	padding: .5rem;
+	padding-left: 0;
+	padding-bottom: 0;
+}
 
 div.expedio-hotel_highlight {
-	background-color: lightblue;
+	background-color: #B43C42;
 }
 
 div.expedio-hotel_rates {
