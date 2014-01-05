@@ -16,7 +16,12 @@
     "q": "~0.9.7"
   },
   "devDependencies": {
-    "nodemon": "0.7.x"
+    "nodemon": "0.7.x",
+    "nodeunit": "~0.8.2",
+    "jshint": "~2.4.1",
+    "grunt": "~0.4.2",
+    "grunt-contrib-jshint": "~0.8.0",
+    "grunt-contrib-watch": "~0.5.3"
   },
   "engines": {
     "node": ">=0.8"

@@ -1,6 +1,6 @@
 var expedio = expedio || {};
 
-( function( $ ) {
+( function( ) {
 	expedio.Router = Backbone.Router.extend({
 		routes: {
 			"": "index",
@@ -8,10 +8,11 @@ var expedio = expedio || {};
 		},
 
 		index: function() {
+
 		},
 
-		search: function( place, from, to ) {
-
+		search: function() {
+			/* place, from, to */
 		}
 	});
 })( jQuery );

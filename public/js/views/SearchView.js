@@ -1,6 +1,6 @@
 var expedio = expedio || {};
 
-( function( $ ) {
+( function( ) {
 	expedio.SearchView = Backbone.Marionette.ItemView.extend({
 		template: "#searchTemplate",
 		tagName: "div",
@@ -25,30 +25,35 @@ var expedio = expedio || {};
 		},
 
 		onShow: function() {
-			var date_opts = {
-					"format": 'dddd, dd mmm, yyyy',
-	    			"formatSubmit": 'mm/dd/yyyy',
+			var dateOptions = {
+					"format": "dddd, dd mmm, yyyy",
+					"formatSubmit": "mm/dd/yyyy",
 				},
 				that = this;
-			this.ui.from.pickadate( date_opts );
-			this.ui.to.pickadate( date_opts );
+			this.ui.from.pickadate( dateOptions );
+			this.ui.to.pickadate( dateOptions );
 			this.ui.place.autocomplete({
 				source: function( request, response ) {
-					$.ajax({ 
+					$.ajax({
 						"url": "http://localhost:3000/disambiguate/" + request.term
 					}).done( function( data ) {
 						// parse json string if necessary
-						if ( typeof data === "string" )
+						if ( typeof data === "string" ) {
 							data = JSON.parse( data );
+						}
 						// go to results
 						var locs = data.LocationInfoResponse.LocationInfos.LocationInfo;
 						// if there is only one result, EAN returns an object
-						if ( !_.isArray( locs ) )
+						if ( !_.isArray( locs ) ) {
 							locs = [ locs ];
+						}
 						// get data showable to user
 						var show = _.map( locs, function( loc ) {
 							var label = loc.city + ( loc.stateProvinceCode ? ", " + loc.stateProvinceCode : "" ) + ", " + loc.countryName;
-							return { "label": label, "value": loc.destinationId };
+							return {
+								"label": label,
+								"value": loc.destinationId
+							};
 						});
 						console.debug( show );
 						response( show );

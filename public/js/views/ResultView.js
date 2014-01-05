@@ -1,6 +1,6 @@
 var expedio = expedio || {};
 
-( function( $ ) {
+( function( ) {
 	expedio.ResultView = Backbone.Marionette.CompositeView.extend({
 		template: "#resultTemplate",
 		tagName: "div",
@@ -8,16 +8,13 @@ var expedio = expedio || {};
 		itemView: expedio.HotelView,
 		itemViewContainer: "div.expedio-hotels_list",
 
-		big_map: false,
-
 		ui: {
 			"map": "div#map",
-			"handle": "div#pullHandle",
 			"container": "div.expedio-hotels_list"
 		},
 
 		events: {
-			"click div#pullHandle": "_pullMap"
+			
 		},
 
 		onRender: function() {
@@ -25,23 +22,12 @@ var expedio = expedio || {};
 			this.on( "itemview:select", this._highlightHotel, this );
 		},
 
-		_pullMap: function() {
-			if ( !this.big_map ) {
-				this.ui.map.css( "flex", "6" );
-				this.ui.handle.text( "-" );
-			} else {
-				this.ui.map.css( "flex", "1" );
-				this.ui.handle.text( "+" );
-			}
-			this.big_map = !this.big_map;
-		},
-
 		_panToHotel: function( view ) {
 			if ( typeof view === "number" ) {
 				var hotel = this.collection.get( view );
 				view = this.children.findByModel( hotel );
-			} 
-			var lat = view.model.get( "latitude" );
+			}
+			var lat = view.model.get( "latitude" ),
 				lon = view.model.get( "longitude" );
 			
 			this.map.panTo( [ lat, lon ] );
@@ -50,21 +36,29 @@ var expedio = expedio || {};
 		_scrollToHotel: function( hotelId ) {
 			var hotel = this.collection.get( hotelId ),
 				view = this.children.findByModel( hotel );
-			this.ui.container.scrollTop( view.el.offsetTop - view.$el.height() );
-			view.highlight();
+			this.ui.container.animate({
+				"scrollTop": view.el.offsetTop - 8
+			}, {
+				"duration": 200,
+				"complete": function() {
+					view.highlight();
+				}
+			});
 		},
 
 		_highlightHotel: function( hotelId ) {
 			if ( typeof hotelId === "object" ) {
 				hotelId = hotelId.model.get( "hotelId" ); // hotelId is actually a view
 			}
+			// unhighlight others
+			this.children.call( "unhighlight" );
 
 			var geo = this.map.markerLayer.getGeoJSON();
 			_.each( geo, function( p ) {
 				if ( p.properties.hotelId === hotelId ) {
-					p.properties[ "marker-color" ] = "#f00";
+					p.properties[ "marker-color" ] = "#B43C42";
 				} else {
-					p.properties[ "marker-color" ] = "#0089EC";
+					p.properties[ "marker-color" ] = "#79A6D2";
 				}
 			});
 			var that = this;
@@ -75,35 +69,32 @@ var expedio = expedio || {};
 			var first = this.collection.at( 0 ),
 				that = this;
 
-			this.map = L.mapbox.map('map', 'prayerslayer.map-h9uyx9eo')
-			      		.setView([
-			      			first.get( "latitude" ), 
-			      			first.get( "longitude" )], 13);
+			this.map = L.mapbox.map( "map", "prayerslayer.map-h9uyx9eo" )
+						.setView([ first.get( "latitude" ), first.get( "longitude" )], 13 );
 
 			// craete points
 			var geoJSON = [];
 			this.collection.each( function( m ) {
 				var point = {
-						"type": "Feature",
-						"geometry": {
-							"type": "Point",
-							"coordinates": [ m.get( "longitude" ), m.get( "latitude" ) ]
-						},
-						"properties": {
-							"title": m.get( "name" ),
-							"description": m.get( "shortDescription" ),
-							"hotelId": m.get( "hotelId" ),
-							"marker-size": "small",
-							"marker-symbol": "building",
-							"marker-color": "#0089EC",
-						}
+					"type": "Feature",
+					"geometry": {
+						"type": "Point",
+						"coordinates": [ m.get( "longitude" ), m.get( "latitude" ) ]
+					},
+					"properties": {
+						"title": m.get( "name" ),
+						"description": m.get( "shortDescription" ),
+						"hotelId": m.get( "hotelId" ),
+						"marker-size": "small",
+						"marker-symbol": "building",
+						"marker-color": "#79A6D2",
+					}
 				};
 				geoJSON.push( point );
 			});
 			this.map.markerLayer.setGeoJSON( geoJSON );
 			this.map.markerLayer.on( "click", function( e ) {
 				var id = e.layer.feature.properties.hotelId;
-				that._panToHotel( id );
 				that._scrollToHotel( id );
 				that._highlightHotel( id );
 			});

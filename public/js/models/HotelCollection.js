@@ -1,6 +1,6 @@
 var expedio = expedio || {};
 
-( function( $ ) {
+( function( ) {
 	expedio.HotelCollection = Backbone.Collection.extend({
 
         model: expedio.Hotel,
@@ -13,8 +13,9 @@ var expedio = expedio || {};
             //this.more_available = data.HotelListResponse.moreResultsAvailable;
             _.each( data, function( hotel ) {
                 hotel.id = hotel.hotelId;
-                if ( !hotel.tripAdvisorRating )
+                if ( !hotel.tripAdvisorRating ) {
                     hotel.tripAdvisorRating = 0;
+                }
             });
             return data;
         }

@@ -1,6 +1,6 @@
 var expedio = expedio || {};
 
-( function( $ ) {
+( function( $, Backbone ) {
 	expedio.HotelView = Backbone.Marionette.ItemView.extend({
 		template: "#hotelTemplate",
 		id: function() {
@@ -26,4 +26,4 @@ var expedio = expedio || {};
 			this.highlight();
 		}
 	});
-})( jQuery );
+})( jQuery, Backbone );
