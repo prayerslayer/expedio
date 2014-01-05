@@ -93,7 +93,6 @@ div.expedio-hotels > div.expedio-hotels_list {
 
 div.expedio-hotel {
 	padding: 1rem;
-	border-radius: .5rem;
 }
 
 img.expedio-hotel_image {
@@ -103,7 +102,7 @@ img.expedio-hotel_image {
 }
 
 div.expedio-hotel_highlight {
-	background-color: #B43C42;
+	border-left: 5px solid #B43C42;
 }
 
 div.expedio-hotel_rates {

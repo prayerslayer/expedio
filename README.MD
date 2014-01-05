@@ -13,6 +13,8 @@ Trying to build an opinionated, but fast and pretty frontend for Expedia.
 
 * Bilder cachen
 * Icons für Wifi, frühstück...
+* Photon gruppiert nicht
+* Echo lädt nicht nach scroll
 * ordentliche startseite
 * Schönes Hotel Template --> bilder!
 * Sortieralgorithmus (schauen was bevorteilt wird mit dollar/rating)

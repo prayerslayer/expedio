@@ -10,7 +10,7 @@ var expedio = expedio || {};
 		className: "expedio-hotel",
 
 		events: {
-			"click": "_select"
+			"click .expedio-hotel_show": "_select"
 		},
 
 		highlight: function() {
