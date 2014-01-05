@@ -98,6 +98,13 @@ var expedio = expedio || {};
 				that._scrollToHotel( id );
 				that._highlightHotel( id );
 			});
+
+			Echo.init({
+                offset: 100,
+                throttle: 200
+            });
+
+            (new Photon()).start();
 		}
 	});
 })( jQuery );

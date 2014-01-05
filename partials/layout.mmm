@@ -4,6 +4,7 @@
         <title>Expedio</title>
         <link rel="stylesheet" href="css/style.css">
         <link rel="stylesheet" href="css/pickadate.02.classic.css">
+        <link rel="stylesheet" href="css/photon.min.css">
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css"/>
         <link href='//api.tiles.mapbox.com/mapbox.js/v1.3.1/mapbox.css' rel='stylesheet' />
           <!--[if lte IE 8]>
@@ -18,6 +19,8 @@
         <script src="js/libs/numeral.min.js"></script>
         <script src="js/libs/pickadate.js"></script>
         <script src="js/libs/moment.js"></script>
+        <script src="js/libs/echo.js"></script>
+        <script src="js/libs/photon.min.js"></script>
         <!-- models -->
         <script type="text/javascript" src="js/models/HotelModel.js"></script>
         <script type="text/javascript" src="js/models/HotelCollection.js"></script>
@@ -52,6 +55,7 @@
 
         <script type="text/template" id="hotelTemplate">
             <h2><%= name %></h2>
+            <div class="expedio-hotel_show">Show in map</div>
             <div class="expedio-hotel_location">
                 <%= locationDescription %>
             </div>
@@ -63,7 +67,7 @@
                 <% } %>
             </div>
             <% _.each( images, function( img ) { %>
-                <a href="<%= img.full_url %>" target="_blank"><img class="expedio-hotel_image" src="<%= img.thumb_url %>" /></a>
+                <img class="expedio-hotel_image" alt="<%= img.caption %>" src="img/spinner.gif" data-echo="<%= img.thumb_url %>" data-photon-fullsize="<%= img.full_url %>" />
             <% }) %>
         </script>
 
@@ -77,7 +81,6 @@
     <script type="text/javascript">
 
         $( document ).ready( function() {
-
             $.support.cors = true;
             var app = new expedio.App();
             app.start();
