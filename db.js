@@ -1,6 +1,8 @@
 var kue = require( "kue" ),
+	http = require( "http" ),
 	jobs = kue.createQueue(),
 	Q = require( "Q" ),
+	_ = require( "underscore" ),
 	mongo = require( "mongoose" ),
 	HotelSchema = null,
 	Hotel = null,
@@ -86,6 +88,8 @@ jobs.process( "fetch hotel info", function( job, done ) {
 	});
 });
 
+// DB STUFF
+
 
 /*
  * Connects to mongodb
@@ -129,6 +133,40 @@ exports.connect = function() {
 		// TODO room images
 
 		promise.resolve();
+	});
+
+	return promise.promise;
+};
+
+/*
+*	Fetches information about a hotel and its images from mongodb.
+*/
+exports.fetchHotel = function( hotelId ) {
+	var hotelParameter = { "hotelId": hotelId },
+		promise = Q.defer(),
+		that = this;
+
+	Q
+	.ninvoke( HotelImg, "find", hotelParameter )
+	.then( function( databaseImages ) {
+		Q
+		.ninvoke( Hotel, "find", hotelParameter )
+		.then( function( databaseHotels ) {
+			// no such hotel
+			if ( !databaseHotels.length ) {
+				// start background job to add this hotel instead
+				var job = jobs.create( "fetch hotel info", hotelParameter ).save();
+				job.on( "complete", function() {
+					that.fetchHotel( hotelId ).then( function( hotel ) {
+						promise.resolve( hotel );
+					});
+				});
+			} else {
+				var response = databaseHotels[ 0 ].toObject();
+				response.images = databaseImages;
+				promise.resolve( response );
+			}
+		});
 	});
 
 	return promise.promise;

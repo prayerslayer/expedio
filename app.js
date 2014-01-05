@@ -44,39 +44,6 @@ app.get( "/disambiguate/:place/?", function( req, res ) {
 				});
 });
 
-/*
-*	Fetches information about a hotel and its images from mongodb.
-*/
-var fetchHotel = function( hotelId ) {
-	var hotelParameter = { "hotelId": hotelId },
-		promise = Q.defer();
-
-	Q
-	.ninvoke( HotelImg, "find", hotelParameter )
-	.then( function( databaseImages ) {
-		Q
-		.ninvoke( Hotel, "find", hotelParameter )
-		.then( function( databaseHotels ) {
-			// no such hotel
-			if ( !databaseHotels.length ) {
-				// start background job to add this hotel instead
-				var job = jobs.create( "fetch hotel info", hotelParameter ).save();
-				job.on( "complete", function() {
-					fetchHotel( hotelId ).then( function( hotel ) {
-						promise.resolve( hotel );
-					});
-				});
-			} else {
-				var response = databaseHotels[ 0 ].toObject();
-				response.images = databaseImages;
-				promise.resolve( response );
-			}
-		});
-	});
-
-	return promise.promise;
-};
-
 app.get( "/search/?", function( req, res ) {
 
 	http.get( "http://api.ean.com/ean-services/rs/hotel/v3/list?" +
@@ -106,7 +73,7 @@ app.get( "/search/?", function( req, res ) {
 							funcs = [];
 
 						_.each( data.HotelListResponse.HotelList.HotelSummary, function( hotel ) {
-							funcs.push( fetchHotel( hotel.hotelId ) );
+							funcs.push( db.fetchHotel( hotel.hotelId ) );
 						});
 
 						Q.all( funcs ).then( function( hotels ) {
