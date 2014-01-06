@@ -72,9 +72,13 @@ var expedio = expedio || {};
 			this.map = L.mapbox.map( "map", "prayerslayer.map-h9uyx9eo" )
 						.setView([ first.get( "latitude" ), first.get( "longitude" )], 13 );
 
+			// hide attribution
+			$( ".leaflet-control-attribution" ).hide();
+
 			// craete points
 			var geoJSON = [];
 			this.collection.each( function( m ) {
+				// create geojson
 				var point = {
 					"type": "Feature",
 					"geometry": {
@@ -91,6 +95,9 @@ var expedio = expedio || {};
 					}
 				};
 				geoJSON.push( point );
+
+				// group photon images
+				(new Photon( "#hotel-" + m.id + " .expedio-hotel_image" )).start();
 			});
 			this.map.markerLayer.setGeoJSON( geoJSON );
 			this.map.markerLayer.on( "click", function( e ) {
@@ -103,8 +110,6 @@ var expedio = expedio || {};
                 offset: 100,
                 throttle: 200
             });
-
-            (new Photon()).start();
 		}
 	});
 })( jQuery );
