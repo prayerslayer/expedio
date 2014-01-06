@@ -1,9 +1,9 @@
 var kue = require( "kue" ),
-	http = require( "http" ),
 	jobs = kue.createQueue(),
 	Q = require( "Q" ),
 	_ = require( "underscore" ),
 	mongo = require( "mongoose" ),
+	expedia = require( "./expedia" ),
 	HotelSchema = null,
 	Hotel = null,
 	HotelImgSchema = null,
@@ -32,59 +32,39 @@ jobs.on( "job complete", function( id ){
 
 
 jobs.process( "fetch hotel info", function( job, done ) {
-	console.log( "Fetching hotel info for " + job.data.hotelId );
-	http.get({
-		"host": "api.ean.com",
-		"path": "/ean-services/rs/hotel/v3/info?cid=55505&hotelId=" + job.data.hotelId + "&apiKey=" + process.env.EAN_KEY,
-		"headers": {
-			"accept": "application/json"
-		}
-	}, function( res ) {
-		var body = "";
-		res.on( "error", function( err ) {
-			console.log( err );
+	if ( process.env.DEVELOPMENT ) {
+		console.log( "Fetching hotel info for " + job.data.hotelId );
+	}
+	expedia.fetchHotelInfo( job.data.hotelId ).then( function( data ) {
+		// general hotel info
+		var hotel = new Hotel({
+			"hotelId": job.data.hotelId,
+			"name": data.HotelSummary.name,
+			"checkInTime": data.HotelDetails.checkInTime,
+			"checkOutTime": data.HotelDetails.checkOutTime,
+			"locationDescription": data.HotelSummary.locationDescription,
+			"latitude": data.HotelSummary.latitude,
+			"longitude": data.HotelSummary.longitude,
+			"lowRate": data.HotelSummary.lowRate,
+			"highRate": data.HotelSummary.highRate,
+			"tripAdvisorRating": data.HotelSummary.tripAdvisorRating
 		});
-		res.on( "data", function( chunk ) {
-			body += chunk;
-		});
-		res.on( "end", function( ) {
-			console.log( "Got response for " + job.data.hotelId + ": " + body );
-			// check if it returned actually JSON
-			if ( body.indexOf( "<" ) === 0 ) {
-				done();
-			}
-			// parse data
-			var data = JSON.parse( body ).HotelInformationResponse;
-			// general hotel info
-			var hotel = new Hotel({
-				"hotelId": job.data.hotelId,
-				"name": data.HotelSummary.name,
-				"checkInTime": data.HotelDetails.checkInTime,
-				"checkOutTime": data.HotelDetails.checkOutTime,
-				"locationDescription": data.HotelSummary.locationDescription,
-				"latitude": data.HotelSummary.latitude,
-				"longitude": data.HotelSummary.longitude,
-				"lowRate": data.HotelSummary.lowRate,
-				"highRate": data.HotelSummary.highRate,
-				"tripAdvisorRating": data.HotelSummary.tripAdvisorRating
-			});
-			hotel.save();
+		hotel.save();
 
-			// hotel images
-			if ( data.HotelImages["@size"] > 0 ) {
-				_.each( data.HotelImages.HotelImage, function( hotelimg ) {
-					var hotelImg = new HotelImg({
-						"hotelId": job.data.hotelId,
-						"caption": hotelimg.caption,
-						"full_url": hotelimg.url,
-						"thumb_url": hotelimg.thumbnailUrl
-					});
-					hotelImg.save();
+		// hotel images
+		if ( data.HotelImages["@size"] > 0 ) {
+			_.each( data.HotelImages.HotelImage, function( hotelimg ) {
+				var hotelImg = new HotelImg({
+					"hotelId": job.data.hotelId,
+					"caption": hotelimg.caption,
+					"full_url": hotelimg.url,
+					"thumb_url": hotelimg.thumbnailUrl
 				});
-			}
+				hotelImg.save();
+			});
+		}
 
-			done();
-		});
+		done();
 	});
 });
 
