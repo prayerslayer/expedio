@@ -11,11 +11,11 @@ Trying to build an opinionated, but fast and pretty frontend for Expedia.
 
 # Todo
 
+* Generisches Hotel, was so aussieht wie in MongoDB. --> Expedia-Konverter. Wie geht das mit Bildern?
+* Echo lädt nicht nach scroll
+* Mehr suchergebnisse
 * Bilder cachen
 * Icons für Wifi, frühstück...
-* Mehr suchergebnisse
-* Echo lädt nicht nach scroll
 * ordentliche startseite
 * Schönes Hotel Template --> bilder!
 * Sortieralgorithmus (schauen was bevorteilt wird mit dollar/rating)
-* Bei Hotel Auswahl Pin click

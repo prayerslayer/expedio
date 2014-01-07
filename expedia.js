@@ -11,12 +11,14 @@ var isJSON = function( str ) {
 					return str.charAt( 0 ) !== "<";	// just prevent html
 				};
 
+// api
+
 exports.disambiguate = function( place ) {
 	if ( process.env.DEVELOPMENT ) {
 		console.log( "Disambiguating", place );
 	}
 	var promise = Q.defer();
-	http.get( host + hotelPath + "/geoSearch?" +
+	http.get( "http://" + host + hotelPath + "/geoSearch?" +
 				"type=1" + // only cities
 				"&destinationString=" + place +
 				"&apiKey=" + process.env.EAN_KEY,
@@ -24,6 +26,7 @@ exports.disambiguate = function( place ) {
 		function( expediaResponse ) {
 			var body = "";
 			expediaResponse.on( "error", function( err ) {
+				console.log( err );
 				promise.reject( err );
 			});
 			expediaResponse.on("data", function(chunk) {
@@ -86,7 +89,7 @@ exports.fetchSearchResults = function( where, from, to, options ) {
 	options.category = options.category || 1;
 	options.resultsDesired = options.resultsDesired || 20;
 
-	http.get( host + hotelPath + "/list?" +
+	http.get( "http://" + host + hotelPath + "/list?" +
 				"destinationId=" + encodeURIComponent( where ) +
 				"&cid=55505" +
 				"&minorRev=20" +
@@ -109,7 +112,7 @@ exports.fetchSearchResults = function( where, from, to, options ) {
 			});
 			expediaResponse.on( "end", function( ) {
 				if ( isJSON( body ) ) {
-					promise.resolve( JSON.parse( data ) );
+					promise.resolve( JSON.parse( body ) );
 				} else {
 					promise.reject( "Response is no valid JSON" );
 				}
