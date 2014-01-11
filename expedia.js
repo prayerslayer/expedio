@@ -8,8 +8,8 @@ var host = "api.ean.com",
 
 // helpers
 var isJSON = function( str ) {
-					return str.charAt( 0 ) !== "<";	// just prevent html
-				};
+				return str.charAt( 0 ) !== "<";	// just prevent html
+			};
 
 // api
 
@@ -66,7 +66,7 @@ exports.fetchHotelInfo = function( hotelId ) {
 			});
 			res.on( "end", function( ) {
 				if ( isJSON( body ) ) {
-					promise.resolve( JSON.parse( body ) );
+					promise.resolve( JSON.parse( body ).HotelInformationResponse );
 				} else {
 					promise.reject( "Reponse is no valid JSON" );
 				}

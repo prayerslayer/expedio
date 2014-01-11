@@ -1,0 +1,3 @@
+test: nodeunit tests/test-db.js
+redis: redis-server
+mongo: mongod --dbpath=$MONGO_PATH --rest

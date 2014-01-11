@@ -6,10 +6,6 @@ var express = require( "express" ),
 	db = require( "./db" ),
 	expedia = require( "./expedia" );
 
-process.on( "uncaughtException", function (err) {
-	console.log( err );
-});
-
 db.connect();
 
 // configure application
@@ -32,20 +28,30 @@ app.configure( function() {
 app.get( "/disambiguate/:place/?", function( req, res ) {
 	expedia.disambiguate( req.params.place ).then( function( data ) {
 		res.send( 200, data );
+	}).fail( function( err ) {
+		res.send( 500, err );
 	});
 });
 
 app.get( "/search/?", function( req, res ) {
-
+	var funcs = [],
+		response = [];
 	expedia.fetchSearchResults( req.query.where, req.query.from, req.query.to ).then( function( data ) {
 		_.each( data.HotelListResponse.HotelList.HotelSummary, function( hotel ) {
+			console.log( "hotel id", hotel.hotelId );
 			funcs.push( db.fetchHotel( hotel.hotelId ) );
 		});
 
 		Q.all( funcs ).then( function( hotels ) {
 			response.push.apply( response, hotels );
 			res.send( 200, response );
+		}).fail( function( err ) {
+			console.log( err );
+			res.send( 500, err );
 		});
+	}).fail( function( err ) {
+		console.error( err );
+		res.send( 500, err );
 	});
 });
 
