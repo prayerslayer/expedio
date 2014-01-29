@@ -15,6 +15,11 @@ exports.setUp = function( callback ) {
 				"$in": [ existingHotel, missingHotel ]
 			}
 		}).remove();
+		db.schema.HotelImg.find({
+			"hotelId": {
+				"$in": [ existingHotel, missingHotel ]
+			}
+		}).remove();
 		// save hotel
 		db.fetchHotel( existingHotel ).then( function() {
 			console.log( "setup finished" );
@@ -36,6 +41,20 @@ exports[ "check existence of hotel" ] = function( test ) {
 		test.ok( hotels[ 0 ].hotelId === existingHotel, "and its id is fine" );
 		test.done();
 		console.log( "done called" );
+	});
+};
+
+exports[ "check images of hotel" ] = function( test ) {
+	console.log( "testing images" );
+	db.schema.HotelImg.find({
+		"hotelId": existingHotel
+	}, function( err, imgs ) {
+		if ( err ) {
+			test.ok( false, err );
+		}
+		console.log( imgs.length );
+		test.ok( imgs.length === 35, "the correct amount of images was found" );
+		test.done();
 	});
 };
 

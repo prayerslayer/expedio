@@ -44,11 +44,53 @@ exports.disambiguate = function( place ) {
 	return promise.promise;
 };
 
+exports.normalize = function( eanHotel ) {
+	var hotel = {};
+	hotel.id = eanHotel["@hotelId"];
+	// general information
+	(function( hotel, info ) {
+		hotel.name = info.name;
+		hotel.location = {
+			"city": info.city,
+			"address": info.address1,
+			"postalCode": info.postalCode,
+			"countryCode": info.countryCode,
+			"latitude": info.latitude,
+			"longitude": info.longitude,
+			"description": info.locationDescription
+		};
+		hotel.pricing = {
+			"high": info.highRate,
+			"low": info.lowRate
+		};
+		hotel.rating = {
+			"stars": info.hotelRating,
+			"taRating": info.tripAdvisorRating,
+			"taReviews": info.tripAdvisorReviewCount,
+			"taRatingUrl": info.tripAdvisorRatingUrl
+		};
+	})( hotel, eanHotel.HotelInformationResponse.HotelSummary );
+	// hotel images
+	( function( hotel, imgs ) {
+		hotel.images = [];
+		imgs.forEach( function( img ) {
+			hotel.images.push({
+				"caption": img.caption,
+				"url": img.url,
+				"thumbnail": img.thumbnailUrl,
+				"hotelId": hotel.id
+			});
+		});
+	})( hotel, eanHotel.HotelInformationResponse.HotelImages.HotelImage );
+	return hotel;
+};
+
 exports.fetchHotelInfo = function( hotelId ) {
 	if ( process.env.DEVELOPMENT ) {
 		console.log( "Fetching hotel", hotelId );
 	}
-	var promise = Q.defer();
+	var promise = Q.defer(),
+		that = this;
 	http.get({
 		"host": host,
 		"path": hotelPath + "/info?cid=55505&hotelId=" + hotelId + "&apiKey=" + process.env.EAN_KEY,
@@ -66,7 +108,7 @@ exports.fetchHotelInfo = function( hotelId ) {
 			});
 			res.on( "end", function( ) {
 				if ( isJSON( body ) ) {
-					promise.resolve( JSON.parse( body ).HotelInformationResponse );
+					promise.resolve( that.normalize( JSON.parse( body ) ) );
 				} else {
 					promise.reject( "Reponse is no valid JSON" );
 				}

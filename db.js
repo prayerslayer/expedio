@@ -10,6 +10,7 @@ var kue = require( "kue" ),
 		Hotel: null,
 		HotelImgSchema: null,
 		HotelImg: null
+		// TODO room images
 	};
 
 exports.schema = schemas;
@@ -45,32 +46,31 @@ jobs.process( "fetch hotel info", function( job, done ) {
 		// general hotel info
 		var hotel = new schemas.Hotel({
 			"hotelId": job.data.hotelId,
-			"name": data.HotelSummary.name,
-			"checkInTime": data.HotelDetails.checkInTime,
-			"checkOutTime": data.HotelDetails.checkOutTime,
-			"locationDescription": data.HotelSummary.locationDescription,
-			"latitude": data.HotelSummary.latitude,
-			"longitude": data.HotelSummary.longitude,
-			"lowRate": data.HotelSummary.lowRate,
-			"highRate": data.HotelSummary.highRate,
-			"tripAdvisorRating": data.HotelSummary.tripAdvisorRating
+			"name": data.name,
+			// "checkInTime": data.HotelDetails.checkInTime,
+			// "checkOutTime": data.HotelDetails.checkOutTime,
+			"locationDescription": data.location.description,
+			"latitude": data.location.latitude,
+			"longitude": data.location.longitude,
+			"lowRate": data.pricing.low,
+			"highRate": data.pricing.high,
+			"tripAdvisorRating": data.rating.taRating
 		});
 		hotel.save();
 
 		// hotel images
-		if ( data.HotelImages["@size"] > 0 ) {
-			_.each( data.HotelImages.HotelImage, function( hotelimg ) {
+		if ( data.images.length > 0 ) {
+			_.each( data.images, function( hotelimg ) {
 				var hotelImg = new schemas.HotelImg({
 					"hotelId": job.data.hotelId,
 					"caption": hotelimg.caption,
 					"full_url": hotelimg.url,
-					"thumb_url": hotelimg.thumbnailUrl
+					"thumb_url": hotelimg.thumbnail
 				});
 				hotelImg.save();
 			});
 		}
-
-		done();
+		setTimeout( done, 1000 );
 	}).fail( function( err ) {
 		done( err );
 	});
@@ -125,6 +125,7 @@ exports.connect = function() {
 				"thumb_url": String
 			});
 			schemas.HotelImg = mongo.model( "HotelImg", schemas.HotelImgSchema );
+			
 			// TODO room images
 
 			console.log( "sucessfully connected and created models" );
@@ -143,7 +144,8 @@ exports.fetchHotel = function( hotelId ) {
 		console.log( "Fetching hotel from db", hotelId );
 	}
 	var hotelParameter = { "hotelId": hotelId },
-		promise = Q.defer();
+		promise = Q.defer(),
+		that = this;
 
 	Q
 	.ninvoke( schemas.HotelImg, "find", hotelParameter )
@@ -159,12 +161,13 @@ exports.fetchHotel = function( hotelId ) {
 				// start background job to add this hotel instead
 				var job = jobs.create( "fetch hotel info", hotelParameter ).save();
 				job.on( "complete", function() {
-					expedia.fetchHotelInfo( hotelId ).then( function( hotel ) {
+					// now the hotel is in the db and we can savely fetch it
+					that.fetchHotel( hotelId ).then( function( hotel ) {
 						promise.resolve( hotel );
-					})
-					.fail( function( err ) {
-						promise.reject( err );
 					});
+				});
+				job.on( "failed", function( err ) {
+					promise.reject( err );
 				});
 			} else {
 				if ( process.env.DEVELOPMENT ) {
@@ -172,7 +175,9 @@ exports.fetchHotel = function( hotelId ) {
 				}
 				var response = databaseHotels[ 0 ].toObject();
 				response.images = databaseImages;
-				promise.resolve( response );
+				setTimeout( function() {
+					promise.resolve( response );
+				}, 1000 );
 			}
 		})
 		.fail( function( err ) {
